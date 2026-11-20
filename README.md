@@ -4,7 +4,7 @@ Code, data and paper for the technical report:
 
 > M. D. Rathod. *Does Practising Collisions Help? Robustness and Reliability of Neuroevolved Driving Agents Trained With and Without Simulated Collisions.* Technical report, 2026. [doi:10.5281/zenodo.24406594](https://doi.org/10.5281/zenodo.24406594)
 
-> **Paper version:** the code and results exactly as used in the paper are frozen at tag [`v1.0-paper`](https://github.com/madhurrathod/neuroevolution-collision-robustness/tree/v1.0-paper) (also available under Releases). The `main` branch keeps developing the game, so later versions may differ.
+> **Paper version:** the code and results exactly as used in the paper are frozen at tag [`paper-collision-2026`](https://github.com/madhurrathod/neuroevolution-collision-robustness/tree/paper-collision-2026) (also available under Releases). The `main` branch keeps developing the game, so later versions may differ.
 
 **Finding, in one line:** across 30 seeded neuroevolution runs, practising simulated collisions in training did not make the typical driver much more robust (median robustness 184 vs. 181 out of 252), but it made training reliable: every collision-trained run produced a competent driver (worst 160), while calm training produced fragile networks and one run that never learned to drive.
 
