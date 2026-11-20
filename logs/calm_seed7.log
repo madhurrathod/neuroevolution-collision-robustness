@@ -1,0 +1,4 @@
+[calm s7] gen 10: best 158 solved=false 0.4 min
+[calm s7] gen 20: best 1595 solved=true 2.1 min
+[calm s7] gen 30: best 1625 solved=true 4.9 min
+DONE calm seed 7: gens 38, first solved 14, test calm 35/36, shoved 35/36, hard 35/36, 7.1 min

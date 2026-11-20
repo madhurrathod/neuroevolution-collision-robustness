@@ -1,0 +1,4 @@
+[shoves s9] gen 10: best 1462 solved=false 1.3 min
+[shoves s9] gen 20: best 1584 solved=true 3.3 min
+[shoves s9] gen 30: best 1624 solved=true 5.7 min
+DONE shoves seed 9: gens 39, first solved 15, test calm 36/36, shoved 36/36, hard 36/36, 8.8 min

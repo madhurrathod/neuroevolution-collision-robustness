@@ -1,0 +1,4 @@
+[shoves s5] gen 10: best 1267 solved=false 0.7 min
+[shoves s5] gen 20: best 1557 solved=true 2.4 min
+[shoves s5] gen 30: best 1609 solved=true 4.9 min
+DONE shoves seed 5: gens 37, first solved 13, test calm 35/36, shoved 35/36, hard 35/36, 6.2 min

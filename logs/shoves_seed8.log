@@ -1,0 +1,5 @@
+[shoves s8] gen 10: best 1407 solved=false 0.5 min
+[shoves s8] gen 20: best 1616 solved=true 1.8 min
+[shoves s8] gen 30: best 1649 solved=true 3.8 min
+[shoves s8] gen 40: best 1649 solved=true 6.1 min
+DONE shoves seed 8: gens 41, first solved 17, test calm 36/36, shoved 33/36, hard 34/36, 6.3 min

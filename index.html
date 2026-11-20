@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Car Track</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1b2a1b; font-family: system-ui, sans-serif; }
+  canvas { display: block; }
+  #hud {
+    position: fixed; top: 12px; left: 12px; color: #fff; background: rgba(0,0,0,0.45);
+    padding: 10px 14px; border-radius: 8px; font-size: 14px; line-height: 1.5; pointer-events: none;
+  }
+  #hud, #hint, #view-info, #pit-panel { user-select: none; }
+  #pit-panel { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.6); padding: 10px 18px; border-radius: 10px; font-size: 15px; line-height: 1.7; text-align: center; pointer-events: none; }
+  #hud b { font-size: 22px; }
+  #view-info { position: fixed; bottom: 50px; right: 14px; color: #ccc; font-size: 13px; background: rgba(0,0,0,0.4); padding: 6px 10px; border-radius: 6px; pointer-events: none; }
+  #menu {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.55);
+  }
+  #menu.hidden { display: none; }
+  #menu .panel {
+    background: #222; color: #eee; padding: 28px 36px; border-radius: 12px; min-width: 300px; text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  }
+  #menu h1 { margin: 0 0 6px; font-size: 26px; }
+  #menu p { margin: 4px 0 16px; color: #aaa; font-size: 14px; }
+  #menu button {
+    display: block; width: 100%; margin: 8px 0; padding: 12px; font-size: 16px; border: 0; border-radius: 8px;
+    background: #3a7bd5; color: #fff; cursor: pointer;
+  }
+  #menu button:hover { background: #4f8fe8; }
+  #menu button.secondary { background: #444; }
+  #menu button.secondary:hover { background: #555; }
+  #menu .keys { text-align: center; font-size: 13px; color: #bbb; margin-top: 14px; line-height: 1.9; }
+  #controls { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
+  #controls.hidden { display: none; }
+  #controls .panel { background: #222; color: #eee; border-radius: 12px; width: min(1040px, 94vw); max-height: 92vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+  #controls .head { display: flex; justify-content: space-between; align-items: center; padding: 18px 26px; border-bottom: 1px solid #333; }
+  #controls h1 { margin: 0; font-size: 26px; }
+  #controls h2 { margin: 18px 0 8px; font-size: 16px; color: #9cc4ff; }
+  #controls .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 34px; padding: 4px 26px 22px; }
+  #controls table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  #controls td { padding: 6px 0; vertical-align: top; line-height: 1.5; border-top: 1px solid #2e2e2e; }
+  #controls td:first-child { white-space: nowrap; padding-right: 16px; color: #ddd; width: 1%; }
+  #controls ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.6; color: #ccc; }
+  #controls button { padding: 10px 16px; font-size: 15px; border: 0; border-radius: 8px; background: #444; color: #fff; cursor: pointer; }
+  #controls button:hover { background: #555; }
+  @media (max-width: 820px) { #controls .cols { grid-template-columns: 1fr; } }
+  kbd { background: #333; border: 1px solid #555; border-radius: 4px; padding: 1px 6px; font-family: monospace; color: #fff; }
+  #menu button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .race-panel { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); }
+  .race-panel.hidden { display: none; }
+  .race-panel .panel { background: #222; color: #eee; padding: 26px 32px; border-radius: 12px; width: min(640px, 94vw); max-height: 92vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+  .race-panel h1 { margin: 0 0 4px; font-size: 26px; }
+  .race-panel p { margin: 4px 0 14px; color: #aaa; font-size: 14px; }
+  .race-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 6px; }
+  .race-choice { background: #2c2f35; border: 2px solid #3a3d44; border-radius: 10px; padding: 12px 14px; cursor: pointer; color: #eee; text-align: left; font: inherit; }
+  .race-choice:hover { border-color: #5a6070; }
+  .race-choice.chosen { border-color: #3a7bd5; background: #23324a; }
+  .race-choice b { display: block; font-size: 17px; }
+  .race-choice span { color: #aab; font-size: 14px; }
+  .race-choice input { width: 90px; margin-top: 6px; padding: 6px 8px; font-size: 16px; border-radius: 6px; border: 1px solid #555; background: #15171a; color: #fff; }
+  #race-custom-error { color: #ff7a6b; font-size: 13px; margin: 2px 0 8px; }
+  .race-panel .row { display: flex; gap: 10px; margin-top: 12px; }
+  .race-panel .row button, .race-panel > .panel > button { flex: 1; padding: 12px; font-size: 16px; border: 0; border-radius: 8px; background: #444; color: #fff; cursor: pointer; }
+  .race-panel button.main { background: #3a7bd5; }
+  .race-panel button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .race-panel .car-line { font-size: 14px; color: #ccc; margin-top: 14px; }
+  #results-laps { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px; }
+  #results-laps td { padding: 3px 8px; border-top: 1px solid #333; }
+  #results-laps td:last-child { text-align: right; font-family: monospace; font-size: 15px; }
+  #results-laps tr.best td { color: #5fd068; font-weight: bold; }
+  .laps-box { max-height: 40vh; overflow-y: auto; margin-top: 6px; }
+  #start-lights { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(10,10,12,0.85); padding: 14px 22px 10px; border-radius: 14px; text-align: center; pointer-events: none; user-select: none; }
+  #start-lights .lamps { display: flex; gap: 18px; }
+  #start-lights .lamp { width: 62px; height: 62px; border-radius: 50%; background: #2a2d33; box-shadow: inset 0 0 10px #000; }
+  #start-lights .lamp.red { background: #ff2a1f; box-shadow: 0 0 26px #ff2a1f; }
+  #start-lights .lamp.green { background: #2dff5a; box-shadow: 0 0 26px #2dff5a; }
+  #start-text { color: #ddd; font-size: 16px; margin-top: 8px; font-weight: bold; letter-spacing: 1px; }
+  #start-text.go { color: #2dff5a; font-size: 30px; }
+  #hint { position: fixed; bottom: 12px; right: 14px; color: #ccc; font-size: 13px; background: rgba(0,0,0,0.4); padding: 6px 10px; border-radius: 6px; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./node_modules/three/build/three.module.js",
+               "three/addons/": "./node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="hud">
+  Speed: <b id="speed">0</b> km/h<br>
+  <span id="surface">On track</span>
+  <b id="handbrake" style="color:#ffb347; font-size:14px; visibility:hidden">&nbsp;HANDBRAKE</b>
+  <b id="skid" style="color:#ffd23f; font-size:14px; visibility:hidden">&nbsp;SKID!</b>
+  <b id="bump" style="color:#ff7a6b; font-size:14px; visibility:hidden">&nbsp;CRASH!</b><br>
+  <span id="tyre-name"></span><br>
+  Damage: <span id="damage">0%</span>
+  <span style="display:inline-block; width:70px; height:8px; background:rgba(255,255,255,0.2); border-radius:4px; vertical-align:middle; overflow:hidden"><span id="damage-bar" style="display:block; height:100%; width:0%"></span></span>
+  <b id="bump-hit" style="color:#ff7a6b; font-size:14px; visibility:hidden">&nbsp;BUMP TOO FAST!</b><br>
+  <span id="ai-info" style="color:#9cc4ff"></span>
+  <span id="lap-line" style="display:none; color:#ffd23f"><span id="lap-info"></span></span>
+</div>
+<div id="view-info" style="display:none"></div>
+<div id="pit-panel" style="display:none"></div>
+<div id="start-lights" style="display:none"><div class="lamps"><div class="lamp"></div><div class="lamp"></div><div class="lamp"></div></div><div id="start-text"></div></div>
+<div id="race-setup" class="race-panel hidden">
+  <div class="panel">
+    <h1>Race setup</h1>
+    <p>How many laps? One lap of the stadium is 2 miles. You start from pole position when the three lights turn green. There is no reset during a race.</p>
+    <div class="race-choices">
+      <button type="button" class="race-choice" data-race="sprint"><b>Sprint</b><span>5 laps</span></button>
+      <button type="button" class="race-choice" data-race="championship"><b>Championship</b><span>10 laps</span></button>
+      <button type="button" class="race-choice" data-race="endurance"><b>Endurance</b><span>20 laps</span></button>
+      <div class="race-choice" data-race="custom"><b>Custom</b><span>1 to 200 laps: </span><input id="race-custom-laps" type="number" min="1" max="200" step="1" inputmode="numeric"></div>
+    </div>
+    <div id="race-custom-error" style="visibility:hidden">Enter a whole number of laps from 1 to 200.</div>
+    <div class="car-line">Your car: <b id="race-car"></b></div>
+    <div class="row"><button type="button" id="race-garage">Garage (change car or tyres)</button><button type="button" id="race-back">Back to menu</button></div>
+    <div class="row"><button type="button" id="race-start" class="main">Start race</button></div>
+  </div>
+</div>
+<div id="race-results" class="race-panel hidden">
+  <div class="panel">
+    <h1 id="results-title">Finished!</h1>
+    <p id="results-summary"></p>
+    <div class="laps-box"><table id="results-laps"></table></div>
+    <div class="row"><button type="button" id="results-again" class="main">Race again</button><button type="button" id="results-new">Choose another race</button></div>
+    <div class="row"><button type="button" id="results-drive">Keep driving (no timing)</button></div>
+  </div>
+</div>
+<div id="hint"><kbd>Esc</kbd> menu &nbsp; <kbd>H</kbd> all controls &nbsp; <kbd>Space</kbd> handbrake &nbsp; <kbd>C</kbd> camera &nbsp; <kbd>G</kbd> garage &nbsp; <kbd>N</kbd> day/night</div>
+<div id="start-screen" class="race-panel">
+  <div class="panel">
+    <h1>Car Track</h1>
+    <p>Where do you want to drive? You can change track later in the menu.</p>
+    <div class="race-choices">
+      <button type="button" class="race-choice" id="start-circuit"><b>The circuit</b><span>Practice on the looping road with the speed bumps, against one AI car. No laps are counted.</span></button>
+      <button type="button" class="race-choice" id="start-stadium"><b>The stadium</b><span>Race the 2-mile oval against 42 AI cars: choose the number of laps, wait for the lights, go.</span></button>
+    </div>
+  </div>
+</div>
+<div id="menu">
+  <div class="panel">
+    <h1>Car Track</h1>
+    <p id="menu-text">Drive your car around the loop — the blue one is driven by a neural network.<br>Turn too hard for your speed and you skid. Slow down for the speed bumps.</p>
+    <button id="btn-resume">Drive</button>
+    <button id="btn-garage" class="secondary">Garage</button>
+    <button id="btn-track" class="secondary">Change track</button>
+    <button id="btn-night" class="secondary">Time: day</button>
+    <button id="btn-controls" class="secondary">Controls</button>
+    <button id="btn-race" class="secondary" style="display:none">Retire from the race (choose a new one)</button>
+    <button id="btn-camera" class="secondary">Camera: follow your car</button>
+    <button id="btn-ai" class="secondary">AI car: on</button>
+    <button id="btn-sensors" class="secondary">AI sensors: hidden</button>
+    <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive &nbsp; <kbd>Space</kbd> handbrake &nbsp; <kbd>Esc</kbd> this menu<br>Every key and mouse control is listed under Controls.</div>
+  </div>
+</div>
+<div id="controls" class="hidden">
+  <div class="panel">
+    <div class="head"><h1>Controls</h1><button id="btn-controls-back">Back to menu <kbd>Esc</kbd></button></div>
+    <div class="cols">
+      <section>
+        <h2>Driving</h2>
+        <table>
+          <tr><td><kbd>W</kbd> or <kbd>↑</kbd></td><td>Accelerate</td></tr>
+          <tr><td><kbd>S</kbd> or <kbd>↓</kbd></td><td>Brake. Once the car has stopped, keep holding to reverse</td></tr>
+          <tr><td><kbd>A</kbd> <kbd>D</kbd> or <kbd>←</kbd> <kbd>→</kbd></td><td>Steer left / right. Tap for a gentle turn; holding at speed builds up to full steering, and then the car skids</td></tr>
+          <tr><td><kbd>Space</kbd></td><td>Handbrake. Locks the rear wheels: the car slows down for as long as you hold it (about half as hard as the brake) and the engine stops pulling. Together with <kbd>A</kbd> or <kbd>D</kbd> the tail slides out, so a short tap going into a bend makes the car drift. At a standstill it holds the car</td></tr>
+        </table>
+        <h2>Camera</h2>
+        <table>
+          <tr><td><kbd>C</kbd></td><td>Next view. Circuit: above your car → above the AI car → whole track → behind your car (3D). Stadium: behind your car → above your car → helicopter → free look → grandstand → pit lane → a close-up of a track light</td></tr>
+          <tr><td>Mouse drag</td><td>In the behind-your-car view only: hold a mouse button and move the mouse to look at the car from any side, or from higher and lower</td></tr>
+          <tr><td>Mouse wheel</td><td>In the behind-your-car view only: move the camera closer or further away</td></tr>
+          <tr><td>Double-click</td><td>In the behind-your-car view only: put the camera back behind the car</td></tr>
+          <tr><td>Stadium free look</td><td>Drag to circle the stadium, wheel to zoom, Shift+drag to move, double-click to reset</td></tr>
+        </table>
+      </section>
+      <section>
+        <h2>Game</h2>
+        <table>
+          <tr><td><kbd>Esc</kbd></td><td>Open or close the menu (the game is paused while it is open)</td></tr>
+          <tr><td><kbd>H</kbd></td><td>Open this list of controls</td></tr>
+          <tr><td>Track</td><td>Chosen on the first screen, and changed with "Change track" in the menu (there is no key for it): the circuit (with the AI car and the speed bumps) or the stadium (a banked 2-mile oval where 43 cars race; the tower in the middle shows you from a helicopter). Changing track during a race ends the race</td></tr>
+          <tr><td><kbd>N</kbd></td><td>Day or night. At night the sky is black with a few stars and a moon; in the stadium the track lights and the pit lights come on and light the road in pools</td></tr>
+          <tr><td><kbd>G</kbd></td><td>Garage: choose your car, fit tyres, repair damage</td></tr>
+          <tr><td><kbd>F</kbd></td><td>Switch straight to the next car</td></tr>
+        </table>
+        <h2>AI car</h2>
+        <table>
+          <tr><td><kbd>I</kbd></td><td>Turn the blue AI car on or off</td></tr>
+          <tr><td><kbd>V</kbd></td><td>Show or hide the AI car's sensor rays</td></tr>
+        </table>
+        <h2>Good to know</h2>
+        <ul>
+          <li>Grass is slow and slippery; how slow depends on your tyres.</li>
+          <li>Slow down for the yellow-and-black speed bumps: too fast and the car jumps and is damaged.</li>
+          <li>Damage makes the car slower. Repair it in the garage (not during a race). There is no reset: drive the car back onto the road yourself.</li>
+          <li>Races (stadium): before the start choose Sprint (5 laps), Championship (10), Endurance (20) or Custom (1–200). Wait on the grid for the three red lights to turn green. During a race the garage is closed; the menu has "Retire from the race".</li>
+          <li>In the stadium the outer wall is solid: hit it and you lose speed and scrape along it.</li>
+          <li>Pit stop (stadium): drive into the pit lane and stop in box 1, framed in yellow. The crew changes all four wheels; press <kbd>1</kbd>–<kbd>5</kbd> while the old wheels come off to choose the new tyres. You get the car back at GO.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

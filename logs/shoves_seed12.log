@@ -1,0 +1,5 @@
+[shoves s12] gen 10: best 1011 solved=false 1.1 min
+[shoves s12] gen 20: best 1635 solved=true 3.7 min
+[shoves s12] gen 30: best 1653 solved=true 6.1 min
+[shoves s12] gen 40: best 1659 solved=true 8.6 min
+DONE shoves seed 12: gens 40, first solved 16, test calm 36/36, shoved 36/36, hard 34/36, 8.6 min

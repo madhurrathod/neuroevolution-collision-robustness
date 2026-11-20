@@ -1,0 +1,7 @@
+[shoves s15] gen 10: best 98 solved=false 0.4 min
+[shoves s15] gen 20: best 112 solved=false 0.8 min
+[shoves s15] gen 30: best 116 solved=false 1.3 min
+[shoves s15] gen 40: best 1063 solved=false 2.8 min
+[shoves s15] gen 50: best 1619 solved=true 5.0 min
+[shoves s15] gen 60: best 1640 solved=true 6.9 min
+DONE shoves seed 15: gens 68, first solved 44, test calm 36/36, shoved 36/36, hard 36/36, 8.3 min

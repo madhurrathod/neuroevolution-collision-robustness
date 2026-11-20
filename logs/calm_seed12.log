@@ -1,0 +1,5 @@
+[calm s12] gen 10: best 1271 solved=false 0.6 min
+[calm s12] gen 20: best 1600 solved=true 2.5 min
+[calm s12] gen 30: best 1622 solved=true 5.6 min
+[calm s12] gen 40: best 1644 solved=true 8.7 min
+DONE calm seed 12: gens 44, first solved 20, test calm 36/36, shoved 36/36, hard 36/36, 9.7 min
